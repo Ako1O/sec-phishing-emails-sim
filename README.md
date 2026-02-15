@@ -8,7 +8,7 @@ This tool is strictly defensive. It does **not** generate phishing emails.
 
 ---
 
-## 🚀 Features
+##  Features
 
 - Parse `.eml` email files
 - Extract URLs from body (text + HTML)
@@ -27,25 +27,25 @@ This tool is strictly defensive. It does **not** generate phishing emails.
 
 ---
 
-## 🏗 Project Structure
-sec-phishing-emails-sim/
-│
-├── pyproject.toml
-├── README.md
-├── src/
-│ └── phishing_sim/
-│ ├── cli.py
-│ └── analyzer/
-│ ├── parse_eml.py
-│ ├── url_features.py
-│ ├── header_features.py
-│ ├── scoring.py
-│ └── report.py
-└── tests/
+##  Project Structure
+- sec-phishing-emails-sim/
+- │
+- ├── pyproject.toml
+- ├── README.md
+- ├── src/
+- │ └── phishing_sim/
+- │ ├── cli.py
+- │ └── analyzer/
+- │ ├── parse_eml.py
+- │ ├── url_features.py
+- │ ├── header_features.py
+- │ ├── scoring.py
+- │ └── report.py
+- └── tests/
 
 ---
 
-## 🛠 Installation
+##  Installation
 
 Clone repository:
 
@@ -71,7 +71,7 @@ python -m pip install -e .
 
 ---
 
-## 📌 Usage
+##  Usage
 
 Analyze an email:
 
@@ -102,7 +102,7 @@ phishsim analyze samples/test.eml --json report.json
 
 ---
 
-## 📊 Scoring Model
+##  Scoring Model
 
 The risk score is based on weighted heuristics:
 
@@ -119,7 +119,7 @@ Score is capped between 0–100.
 
 ---
 
-## 🧠 Purpose
+##  Purpose
 
 This project is designed for:
 
@@ -132,13 +132,13 @@ It does not send emails and does not simulate real-world phishing attacks.
 
 ---
 
-## 🔒 Security Note
+##  Security Note
 
 This tool performs offline analysis only.
 It does not contact external services.
 
 ---
 
-## 📄 License
+##  License
 
 MIT License
