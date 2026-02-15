@@ -8,6 +8,8 @@ This tool is strictly defensive. It does **not** generate phishing emails.
 
 ---
 
+## WORK IN PROGRESS !!!
+
 ##  Features
 
 - Parse `.eml` email files
