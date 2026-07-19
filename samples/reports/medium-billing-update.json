@@ -1,0 +1,31 @@
+{
+  "file": "samples/medium-billing-update.eml",
+  "score": 45,
+  "level": "MEDIUM",
+  "top_reasons": [
+    "Many links in body",
+    "Links contain many tracking/query parameters",
+    "Very long link(s)",
+    "Urgency/pressure language in subject",
+    "Missing common authentication-related headers"
+  ],
+  "signals": {
+    "url_count": 3,
+    "shortener_count": 0,
+    "ip_url_count": 0,
+    "many_params_count": 1,
+    "long_url_count": 1,
+    "has_auth_results": 0,
+    "reply_to_mismatch": 0,
+    "urgent_subject": 1
+  },
+  "urls": [
+    "https://paypal-secure-verification.com/account/billing/update?redirect=confirm&locale=en-us&session=af31&ref=billing&track=1",
+    "https://paypal-secure-verification.com/account/manage",
+    "https://paypal-secure-verification.com/account/statement"
+  ],
+  "from": "PayPal Billing <billing@paypal-secure-verification.com>",
+  "to": "Daniil Khersonets <daniil.khersonets@gmail.com>",
+  "subject": "Please verify your billing information",
+  "date": "Thu, 16 Jul 2026 14:05:33 +0000"
+}

@@ -1,0 +1,34 @@
+{
+  "file": "samples/high-account-suspended.eml",
+  "score": 100,
+  "level": "HIGH",
+  "top_reasons": [
+    "Many links in body",
+    "URL shortener used",
+    "Link uses an IP address instead of a domain",
+    "Links contain many tracking/query parameters",
+    "Very long link(s)",
+    "Reply-To domain differs from From domain",
+    "Urgency/pressure language in subject",
+    "Missing common authentication-related headers"
+  ],
+  "signals": {
+    "url_count": 3,
+    "shortener_count": 1,
+    "ip_url_count": 1,
+    "many_params_count": 1,
+    "long_url_count": 1,
+    "has_auth_results": 0,
+    "reply_to_mismatch": 1,
+    "urgent_subject": 1
+  },
+  "urls": [
+    "http://185.220.101.47/secure/login.php?user=daniil&session=88213&ref=email&campaign=urgent&step=1&token=9f8a7b6c5d4e3f2a1b0c",
+    "http://bit.ly/verify-now-2026",
+    "https://secure-mail-alerts.com/help-center"
+  ],
+  "from": "IT Support Team <support@secure-mail-alerts.com>",
+  "to": "Daniil Khersonets <daniil.khersonets@gmail.com>",
+  "subject": "Urgent: Your Account Will Be Suspended - Action Required",
+  "date": "Wed, 15 Jul 2026 03:22:11 +0000"
+}

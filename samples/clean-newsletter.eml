@@ -1,0 +1,18 @@
+Date: Mon, 13 Jul 2026 09:15:00 +0000
+Message-ID: <20260713091500.1@github.com>
+Subject: Your weekly digest is here
+From: GitHub <notifications@github.com>
+To: Daniil Khersonets <daniil.khersonets@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Authentication-Results: mx.google.com; spf=pass smtp.mailfrom=github.com; dkim=pass header.i=@github.com; dmarc=pass
+Received-SPF: pass (google.com: domain of notifications@github.com designates 192.30.252.1 as permitted sender)
+DKIM-Signature: v=1; a=rsa-sha256; d=github.com; s=default
+
+Hi Daniil,
+
+Here is your weekly activity digest.
+
+View it online: https://github.com/notifications
+
+Thanks,
+The GitHub Team

@@ -26,10 +26,10 @@ def analyze_eml_to_report(path: Path) -> dict:
         level = "MEDIUM"
 
     return {
-        "file": str(path),
+        "file": path.as_posix(),
         "score": s,
         "level": level,
-        "top_reasons": reasons[:5],
+        "top_reasons": reasons,
         "signals": signals,
         "urls": urls,
         "from": eml.from_,

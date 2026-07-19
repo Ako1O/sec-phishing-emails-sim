@@ -1,0 +1,650 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phishing Email Report Viewer</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --card: #111820;
+    --card-alt: #0b0f14;
+    --border: #262f3a;
+    --text: #e6edf3;
+    --muted: #8b98a5;
+    --accent: #58a6ff;
+    --green: #3fb950;
+    --green-bg: rgba(63, 185, 80, 0.12);
+    --green-border: rgba(63, 185, 80, 0.4);
+    --amber: #e3b341;
+    --amber-bg: rgba(227, 179, 65, 0.12);
+    --amber-border: rgba(227, 179, 65, 0.4);
+    --red: #f85149;
+    --red-bg: rgba(248, 81, 73, 0.12);
+    --red-border: rgba(248, 81, 73, 0.4);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 32px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .wrap { max-width: 1080px; margin: 0 auto; }
+
+  h1 {
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 6px;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    max-width: 720px;
+    margin: 0 0 28px;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  @media (max-width: 720px) {
+    .row { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 20px;
+  }
+
+  .card h2 {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0 0 4px;
+  }
+
+  .card .hint {
+    color: var(--muted);
+    font-size: 12.5px;
+    margin: 0 0 14px;
+  }
+
+  .dropzone {
+    border: 1px dashed var(--border);
+    border-radius: 6px;
+    padding: 22px 14px;
+    text-align: center;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+
+  .dropzone.drag { border-color: var(--accent); color: var(--text); }
+
+  .sample-btn {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: var(--card-alt);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 6px;
+    padding: 9px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    margin-bottom: 8px;
+  }
+
+  .sample-btn:last-child { margin-bottom: 0; }
+  .sample-btn:hover { border-color: var(--accent); }
+
+  .sample-btn .tag {
+    float: right;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    padding: 1px 7px;
+    border-radius: 999px;
+  }
+
+  .tag-low { color: var(--green); background: var(--green-bg); border: 1px solid var(--green-border); }
+  .tag-medium { color: var(--amber); background: var(--amber-bg); border: 1px solid var(--amber-border); }
+  .tag-high { color: var(--red); background: var(--red-bg); border: 1px solid var(--red-border); }
+
+  .status-banner {
+    display: none;
+    border-radius: 6px;
+    padding: 9px 12px;
+    font-size: 13px;
+    margin-top: 4px;
+  }
+
+  .status-banner.show { display: block; }
+  .status-banner.ok { background: var(--green-bg); border: 1px solid var(--green-border); color: var(--green); }
+  .status-banner.err { background: var(--red-bg); border: 1px solid var(--red-border); color: var(--red); }
+
+  .meta-list { display: grid; grid-template-columns: 84px 1fr; gap: 6px 12px; font-size: 13px; }
+  .meta-list dt { color: var(--muted); }
+  .meta-list dd { margin: 0; word-break: break-word; }
+
+  .empty-state { color: var(--muted); font-size: 13px; }
+
+  .tiles {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  @media (max-width: 720px) {
+    .tiles { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .tile {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 18px;
+  }
+
+  .tile .num { font-size: 26px; font-weight: 600; }
+  .tile .label {
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .filters {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  input[type="text"], select {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 6px;
+    padding: 9px 12px;
+    font-size: 13px;
+    font-family: inherit;
+  }
+
+  input[type="text"] { flex: 1; }
+  select { width: 190px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    font-size: 13px;
+  }
+
+  th, td {
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  th {
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: var(--card-alt);
+  }
+
+  tr:last-child td { border-bottom: none; }
+  td.url-cell { word-break: break-all; max-width: 420px; }
+
+  .pill {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 999px;
+    margin: 1px 4px 1px 0;
+  }
+
+  .section {
+    margin-top: 24px;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .reasons-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+  }
+
+  .reasons-card ul { margin: 0; padding-left: 18px; }
+  .reasons-card li { margin-bottom: 4px; }
+
+  .signal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 24px;
+    font-size: 13px;
+  }
+
+  @media (max-width: 600px) {
+    .signal-grid { grid-template-columns: 1fr; }
+  }
+
+  .signal-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .signal-row .val { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .signal-row.hit .val { color: var(--text); font-weight: 600; }
+
+  footer {
+    margin-top: 32px;
+    color: var(--muted);
+    font-size: 12px;
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+  }
+
+  #fileInput { display: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Phishing Email Report Viewer</h1>
+  <p class="subtitle">
+    Reads the JSON report produced by <code>phishsim analyze --json</code> and displays it as a
+    readable risk report. This page runs entirely in the browser — nothing is uploaded anywhere.
+  </p>
+
+  <div class="row">
+    <div class="card">
+      <h2>Load a report</h2>
+      <p class="hint">Open a JSON file produced by <code>phishsim analyze</code>, or try one of the sample emails below.</p>
+
+      <div class="dropzone" id="dropzone">Click to choose a file, or drag one here</div>
+      <input type="file" id="fileInput" accept="application/json,.json">
+
+      <button class="sample-btn" data-sample="clean">Clean example — weekly newsletter <span class="tag tag-low">LOW</span></button>
+      <button class="sample-btn" data-sample="medium">Suspicious example — billing update <span class="tag tag-medium">MEDIUM</span></button>
+      <button class="sample-btn" data-sample="high">Phishing example — account suspended <span class="tag tag-high">HIGH</span></button>
+
+      <div class="status-banner" id="statusBanner"></div>
+    </div>
+
+    <div class="card">
+      <h2>Report summary</h2>
+      <p class="hint" id="summaryHint">Email metadata from the loaded report.</p>
+      <div id="summaryEmpty" class="empty-state">No report loaded yet.</div>
+      <dl class="meta-list" id="summaryList" style="display:none;">
+        <dt>Source</dt><dd id="metaFile">—</dd>
+        <dt>From</dt><dd id="metaFrom">—</dd>
+        <dt>To</dt><dd id="metaTo">—</dd>
+        <dt>Subject</dt><dd id="metaSubject">—</dd>
+        <dt>Date</dt><dd id="metaDate">—</dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="tiles">
+    <div class="tile"><div class="num" id="tileScore">—</div><div class="label">Risk score</div></div>
+    <div class="tile"><div class="num" id="tileLevel">—</div><div class="label">Risk level</div></div>
+    <div class="tile"><div class="num" id="tileUrls">—</div><div class="label">URLs found</div></div>
+    <div class="tile"><div class="num" id="tileReasons">—</div><div class="label">Indicators triggered</div></div>
+  </div>
+
+  <div class="section">Why it was flagged</div>
+  <div class="reasons-card">
+    <div id="reasonsEmpty" class="empty-state">Load a report to see the reasons behind its score.</div>
+    <ul id="reasonsList" style="display:none;"></ul>
+  </div>
+
+  <div class="section">Links found in the email</div>
+  <div class="filters">
+    <input type="text" id="urlFilter" placeholder="Filter by URL or domain">
+    <select id="statusFilter">
+      <option value="all">All links</option>
+      <option value="shortener">Shortener</option>
+      <option value="ip">IP-based</option>
+      <option value="params">Many parameters</option>
+      <option value="long">Long link</option>
+      <option value="clean">No flags</option>
+    </select>
+  </div>
+  <table>
+    <thead>
+      <tr><th>URL</th><th>Host</th><th>Flags</th></tr>
+    </thead>
+    <tbody id="urlRows">
+      <tr><td colspan="3" class="empty-state">No report loaded yet.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="section">Signal detail</div>
+  <div class="reasons-card">
+    <div id="signalEmpty" class="empty-state">Load a report to see raw signal counts.</div>
+    <div class="signal-grid" id="signalGrid" style="display:none;"></div>
+  </div>
+
+  <footer>
+    Everything on this page runs in your browser. Files you open are never sent anywhere.
+    The underlying scoring comes from the <code>phishsim</code> command-line tool.
+  </footer>
+</div>
+
+<script>
+  var SHORTENER_DOMAINS = ["bit.ly", "tinyurl.com", "t.co", "goo.gl", "ow.ly", "is.gd", "cutt.ly", "rb.gy"];
+  var IP_HOST_RE = /^\d{1,3}(\.\d{1,3}){3}$/;
+
+  var SIGNAL_LABELS = {
+    url_count: "Links in body",
+    shortener_count: "URL shorteners used",
+    ip_url_count: "IP-based links",
+    many_params_count: "Links with many query parameters",
+    long_url_count: "Very long links",
+    reply_to_mismatch: "Reply-To domain differs from From",
+    urgent_subject: "Urgency language in subject",
+    has_auth_results: "Authentication headers present"
+  };
+
+  var SAMPLE_REPORTS = {
+    clean: {
+      "file": "samples/clean-newsletter.eml", "score": 0, "level": "LOW", "top_reasons": [],
+      "signals": {"url_count":1,"shortener_count":0,"ip_url_count":0,"many_params_count":0,"long_url_count":0,"has_auth_results":1,"reply_to_mismatch":0,"urgent_subject":0},
+      "urls": ["https://github.com/notifications"],
+      "from": "GitHub <notifications@github.com>",
+      "to": "Daniil Khersonets <daniil.khersonets@gmail.com>",
+      "subject": "Your weekly digest is here",
+      "date": "Mon, 13 Jul 2026 09:15:00 +0000"
+    },
+    medium: {
+      "file": "samples/medium-billing-update.eml", "score": 45, "level": "MEDIUM",
+      "top_reasons": ["Many links in body","Links contain many tracking/query parameters","Very long link(s)","Urgency/pressure language in subject","Missing common authentication-related headers"],
+      "signals": {"url_count":3,"shortener_count":0,"ip_url_count":0,"many_params_count":1,"long_url_count":1,"has_auth_results":0,"reply_to_mismatch":0,"urgent_subject":1},
+      "urls": [
+        "https://paypal-secure-verification.com/account/billing/update?redirect=confirm&locale=en-us&session=af31&ref=billing&track=1",
+        "https://paypal-secure-verification.com/account/manage",
+        "https://paypal-secure-verification.com/account/statement"
+      ],
+      "from": "PayPal Billing <billing@paypal-secure-verification.com>",
+      "to": "Daniil Khersonets <daniil.khersonets@gmail.com>",
+      "subject": "Please verify your billing information",
+      "date": "Thu, 16 Jul 2026 14:05:33 +0000"
+    },
+    high: {
+      "file": "samples/high-account-suspended.eml", "score": 100, "level": "HIGH",
+      "top_reasons": ["Many links in body","URL shortener used","Link uses an IP address instead of a domain","Links contain many tracking/query parameters","Very long link(s)","Reply-To domain differs from From domain","Urgency/pressure language in subject","Missing common authentication-related headers"],
+      "signals": {"url_count":3,"shortener_count":1,"ip_url_count":1,"many_params_count":1,"long_url_count":1,"has_auth_results":0,"reply_to_mismatch":1,"urgent_subject":1},
+      "urls": [
+        "http://185.220.101.47/secure/login.php?user=daniil&session=88213&ref=email&campaign=urgent&step=1&token=9f8a7b6c5d4e3f2a1b0c",
+        "http://bit.ly/verify-now-2026",
+        "https://secure-mail-alerts.com/help-center"
+      ],
+      "from": "IT Support Team <support@secure-mail-alerts.com>",
+      "to": "Daniil Khersonets <daniil.khersonets@gmail.com>",
+      "subject": "Urgent: Your Account Will Be Suspended - Action Required",
+      "date": "Wed, 15 Jul 2026 03:22:11 +0000"
+    }
+  };
+
+  var currentReport = null;
+
+  function levelTagClass(level) {
+    if (level === "HIGH") return "tag-high";
+    if (level === "MEDIUM") return "tag-medium";
+    return "tag-low";
+  }
+
+  function classifyUrl(u) {
+    var flags = [];
+    var host = "";
+    try {
+      host = new URL(u).hostname.toLowerCase();
+    } catch (e) {
+      host = "";
+    }
+
+    if (SHORTENER_DOMAINS.indexOf(host) !== -1) flags.push("shortener");
+    if (IP_HOST_RE.test(host)) flags.push("ip");
+
+    var query = "";
+    try { query = new URL(u).search.replace(/^\?/, ""); } catch (e) {}
+    if (query && query.split("&").length - 1 >= 3) flags.push("params");
+
+    if (u.length >= 120) flags.push("long");
+
+    return { host: host, flags: flags };
+  }
+
+  var FLAG_LABELS = {
+    shortener: "Shortener",
+    ip: "IP-based",
+    params: "Many params",
+    long: "Long link"
+  };
+
+  var FLAG_CLASS = {
+    shortener: "tag-high",
+    ip: "tag-high",
+    params: "tag-medium",
+    long: "tag-medium"
+  };
+
+  function renderReport(report, statusMessage) {
+    currentReport = report;
+
+    document.getElementById("summaryEmpty").style.display = "none";
+    document.getElementById("summaryList").style.display = "grid";
+    document.getElementById("metaFile").textContent = report.file || "—";
+    document.getElementById("metaFrom").textContent = report.from || "—";
+    document.getElementById("metaTo").textContent = report.to || "—";
+    document.getElementById("metaSubject").textContent = report.subject || "—";
+    document.getElementById("metaDate").textContent = report.date || "—";
+
+    document.getElementById("tileScore").textContent = report.score + "/100";
+    var levelEl = document.getElementById("tileLevel");
+    levelEl.textContent = report.level;
+    levelEl.className = "num " + (report.level === "HIGH" ? "" : "");
+    levelEl.style.color = report.level === "HIGH" ? "var(--red)" : report.level === "MEDIUM" ? "var(--amber)" : "var(--green)";
+
+    document.getElementById("tileUrls").textContent = (report.urls || []).length;
+    document.getElementById("tileReasons").textContent = (report.top_reasons || []).length;
+
+    var reasonsList = document.getElementById("reasonsList");
+    var reasonsEmpty = document.getElementById("reasonsEmpty");
+    reasonsList.innerHTML = "";
+    if (report.top_reasons && report.top_reasons.length) {
+      reasonsEmpty.style.display = "none";
+      reasonsList.style.display = "block";
+      report.top_reasons.forEach(function (r) {
+        var li = document.createElement("li");
+        li.textContent = r;
+        reasonsList.appendChild(li);
+      });
+    } else {
+      reasonsEmpty.textContent = "No risk indicators were triggered for this email.";
+      reasonsEmpty.style.display = "block";
+      reasonsList.style.display = "none";
+    }
+
+    var signalGrid = document.getElementById("signalGrid");
+    var signalEmpty = document.getElementById("signalEmpty");
+    signalGrid.innerHTML = "";
+    var signals = report.signals || {};
+    Object.keys(SIGNAL_LABELS).forEach(function (key) {
+      if (!(key in signals)) return;
+      var value = signals[key];
+      var triggered = key === "has_auth_results" ? value === 0 : !!value;
+      var row = document.createElement("div");
+      row.className = "signal-row" + (triggered ? " hit" : "");
+      var label = document.createElement("span");
+      label.textContent = SIGNAL_LABELS[key];
+      var val = document.createElement("span");
+      val.className = "val";
+      val.textContent = key === "has_auth_results" ? (value ? "present" : "missing") : value;
+      row.appendChild(label);
+      row.appendChild(val);
+      signalGrid.appendChild(row);
+    });
+    signalEmpty.style.display = "none";
+    signalGrid.style.display = "grid";
+
+    renderUrlTable();
+
+    if (statusMessage) showStatus(statusMessage, "ok");
+  }
+
+  function renderUrlTable() {
+    var tbody = document.getElementById("urlRows");
+    tbody.innerHTML = "";
+
+    if (!currentReport) {
+      tbody.innerHTML = '<tr><td colspan="3" class="empty-state">No report loaded yet.</td></tr>';
+      return;
+    }
+
+    var filterText = document.getElementById("urlFilter").value.trim().toLowerCase();
+    var statusFilter = document.getElementById("statusFilter").value;
+    var urls = currentReport.urls || [];
+
+    var rows = urls.map(function (u) {
+      var info = classifyUrl(u);
+      return { url: u, host: info.host, flags: info.flags };
+    }).filter(function (row) {
+      if (filterText && row.url.toLowerCase().indexOf(filterText) === -1 && row.host.indexOf(filterText) === -1) {
+        return false;
+      }
+      if (statusFilter === "all") return true;
+      if (statusFilter === "clean") return row.flags.length === 0;
+      return row.flags.indexOf(statusFilter) !== -1;
+    });
+
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="3" class="empty-state">No links match this filter.</td></tr>';
+      return;
+    }
+
+    rows.forEach(function (row) {
+      var tr = document.createElement("tr");
+
+      var urlTd = document.createElement("td");
+      urlTd.className = "url-cell";
+      urlTd.textContent = row.url;
+
+      var hostTd = document.createElement("td");
+      hostTd.textContent = row.host || "—";
+
+      var flagsTd = document.createElement("td");
+      if (row.flags.length === 0) {
+        var pill = document.createElement("span");
+        pill.className = "pill tag-low";
+        pill.textContent = "No flags";
+        flagsTd.appendChild(pill);
+      } else {
+        row.flags.forEach(function (f) {
+          var pill = document.createElement("span");
+          pill.className = "pill " + FLAG_CLASS[f];
+          pill.textContent = FLAG_LABELS[f];
+          flagsTd.appendChild(pill);
+        });
+      }
+
+      tr.appendChild(urlTd);
+      tr.appendChild(hostTd);
+      tr.appendChild(flagsTd);
+      tbody.appendChild(tr);
+    });
+  }
+
+  function showStatus(message, kind) {
+    var el = document.getElementById("statusBanner");
+    el.textContent = message;
+    el.className = "status-banner show " + kind;
+  }
+
+  function loadFile(file) {
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      try {
+        var data = JSON.parse(reader.result);
+        renderReport(data, "Loaded: " + file.name);
+      } catch (e) {
+        showStatus("Could not parse " + file.name + " as a report — is it valid JSON from phishsim?", "err");
+      }
+    };
+    reader.onerror = function () {
+      showStatus("Could not read " + file.name, "err");
+    };
+    reader.readAsText(file);
+  }
+
+  var dropzone = document.getElementById("dropzone");
+  var fileInput = document.getElementById("fileInput");
+
+  dropzone.addEventListener("click", function () { fileInput.click(); });
+  fileInput.addEventListener("change", function (e) {
+    if (e.target.files && e.target.files[0]) loadFile(e.target.files[0]);
+  });
+
+  ["dragenter", "dragover"].forEach(function (evt) {
+    dropzone.addEventListener(evt, function (e) {
+      e.preventDefault();
+      dropzone.classList.add("drag");
+    });
+  });
+  ["dragleave", "drop"].forEach(function (evt) {
+    dropzone.addEventListener(evt, function (e) {
+      e.preventDefault();
+      dropzone.classList.remove("drag");
+    });
+  });
+  dropzone.addEventListener("drop", function (e) {
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+  });
+
+  document.querySelectorAll(".sample-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var key = btn.getAttribute("data-sample");
+      var report = SAMPLE_REPORTS[key];
+      renderReport(report, "Loaded sample: " + report.file);
+    });
+  });
+
+  document.getElementById("urlFilter").addEventListener("input", renderUrlTable);
+  document.getElementById("statusFilter").addEventListener("change", renderUrlTable);
+
+  var preselect = new URLSearchParams(window.location.search).get("sample");
+  if (preselect && SAMPLE_REPORTS[preselect]) {
+    var preselectReport = SAMPLE_REPORTS[preselect];
+    renderReport(preselectReport, "Loaded sample: " + preselectReport.file);
+  }
+</script>
+</body>
+</html>

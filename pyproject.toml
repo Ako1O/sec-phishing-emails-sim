@@ -1,6 +1,9 @@
 [project]
 name = "sec-phishing-emails-sim"
 version = "0.1.0"
+description = "Defensive phishing email analyzer for .eml files"
+readme = "README.md"
+license = "MIT"
 requires-python = ">=3.10"
 dependencies = []
 

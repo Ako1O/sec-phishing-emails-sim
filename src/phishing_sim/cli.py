@@ -19,7 +19,6 @@ def main() -> None:
 
     args = p.parse_args()
 
-    # Partial implementation f
     if not args.eml.exists():
         print(f"Error: file not found: {args.eml}")
         sys.exit(2)
@@ -34,7 +33,6 @@ def main() -> None:
             args.json_out.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
 
         if args.pretty or not args.json_out:
-            # nice console output
             print(f"Risk score: {report['score']}/100  |  Level: {report['level']}")
             print("Top reasons:")
             for r in report["top_reasons"]:

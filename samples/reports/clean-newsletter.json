@@ -1,0 +1,23 @@
+{
+  "file": "samples/clean-newsletter.eml",
+  "score": 0,
+  "level": "LOW",
+  "top_reasons": [],
+  "signals": {
+    "url_count": 1,
+    "shortener_count": 0,
+    "ip_url_count": 0,
+    "many_params_count": 0,
+    "long_url_count": 0,
+    "has_auth_results": 1,
+    "reply_to_mismatch": 0,
+    "urgent_subject": 0
+  },
+  "urls": [
+    "https://github.com/notifications"
+  ],
+  "from": "GitHub <notifications@github.com>",
+  "to": "Daniil Khersonets <daniil.khersonets@gmail.com>",
+  "subject": "Your weekly digest is here",
+  "date": "Mon, 13 Jul 2026 09:15:00 +0000"
+}

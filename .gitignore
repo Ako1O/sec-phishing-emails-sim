@@ -4,8 +4,6 @@ __pycache__/
 *.pyo
 *.pyd
 *.log
-*.json
-*.eml
 dist/
 build/
 *.egg-info/
